@@ -22,9 +22,9 @@ public class PlayerControl : MonoBehaviour
     public float groundCheckRadius = 0.4f;   // Radius of ground check circle
     public LayerMask groundLayer;
 
-    public Transform waterCheck;           // A position marking the center of circle where to check if the player is grounded.
-    public bool watered = false;           // Whether or not the player is (neck deep) in water.
-    public float waterCheckRadius = 0.1f;   // Radius of ground check circle
+    public Transform waterCheck;           // A position marking the center of circle where to check if the player is in water.
+    public bool watered = false;           // Whether or not the player is in water (deep enough to swim).
+    public float waterCheckRadius = 0.1f;   // Radius of water check circle
     public LayerMask waterLayer;
 
 	private Animator anim;					// Reference to the player's animator component.
