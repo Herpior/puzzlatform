@@ -17,10 +17,15 @@ public class PlayerControl : MonoBehaviour
 	public float jumpForce = 1000f;			// Amount of force added when the player jumps.
 
 
-	public Transform groundCheck;			// A position marking the center of circle where to check if the player is grounded.
-	public bool grounded = false;			// Whether or not the player is grounded.
+    public Transform groundCheck;			// A position marking the center of circle where to check if the player is grounded.
+    public bool grounded = false;           // Whether or not the player is grounded.
     public float groundCheckRadius = 0.4f;   // Radius of ground check circle
     public LayerMask groundLayer;
+
+    public Transform waterCheck;           // A position marking the center of circle where to check if the player is grounded.
+    public bool watered = false;           // Whether or not the player is (neck deep) in water.
+    public float waterCheckRadius = 0.1f;   // Radius of ground check circle
+    public LayerMask waterLayer;
 
 	private Animator anim;					// Reference to the player's animator component.
     private Rigidbody2D rigi;
@@ -38,12 +43,14 @@ public class PlayerControl : MonoBehaviour
 	void Update()
 	{
 		// The player is grounded if a linecast to the groundcheck position hits anything on the ground layer.
-		grounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        grounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        watered = Physics2D.OverlapCircle(waterCheck.position, waterCheckRadius, waterLayer);
 
         float now = Time.time;
-		// If the jump button is pressed and the player is grounded then the player should jump.
-		// except that this is a very buggy and hacky 
-        if (Input.GetAxis("Vertical") > 0 && grounded && now > canJumpAfter)
+        float vert = Input.GetAxis("Vertical");
+        // If the jump button is pressed and the player is grounded then the player should jump.
+        jump = false;
+        if (vert > 0 && grounded && now > canJumpAfter && !watered)
         {
             jump = true;
             canJumpAfter = now + jumpCoolDownInSeconds;
@@ -53,8 +60,9 @@ public class PlayerControl : MonoBehaviour
 
 	void FixedUpdate ()
 	{
-		// Cache the horizontal input.
-		float h = Input.GetAxis("Horizontal");
+        // Cache the horizontal input.
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
 
 		// The Speed animator parameter is set to the absolute value of the horizontal input.
 		anim.SetFloat("Speed", Mathf.Abs(h));
@@ -96,6 +104,12 @@ public class PlayerControl : MonoBehaviour
 			// Make sure the player can't jump again until the jump conditions from Update are satisfied.
 			jump = false;
 		}
+        else if (watered){
+            rigi.AddForce(Vector2.up * v * moveForce);
+            if(Mathf.Abs(rigi.velocity.y) > maxSpeed)
+			// ... set the player's velocity to the maxSpeed in the x axis.
+            rigi.velocity = new Vector2(rigi.velocity.x, Mathf.Sign(rigi.velocity.y) * maxSpeed);
+        }
 	}
 	
 	
